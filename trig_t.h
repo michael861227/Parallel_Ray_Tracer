@@ -22,7 +22,7 @@ public:
                 ray.t_max = t;
                 rec.p = ray.at(t);
                 rec.front_face = dot(ray.direction, n) < 0;
-                rec.n = rec.front_face ? n : -n;
+                rec.unit_n = rec.front_face ? n.unit_vector() : -n.unit_vector();
                 return true;
             }
         }

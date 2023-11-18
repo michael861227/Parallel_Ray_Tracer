@@ -31,7 +31,7 @@ public:
         record.p = ray.at(root);
         vec3_t outward_normal = (record.p - center) / radius;
         record.front_face = dot(ray.direction, outward_normal) < 0;
-        record.n = record.front_face ? outward_normal : -outward_normal;
+        record.unit_n = record.front_face ? outward_normal : -outward_normal;
 
         return true;
     }
