@@ -5,6 +5,7 @@
 #include <cmath>
 #include <algorithm>
 #include <random>
+#include <cassert>
 #include "utility.h"
 
 class vec3_t {
@@ -39,9 +40,13 @@ public:
         float r = std::sqrt(std::clamp(v[0], 0.0f, 1.0f));
         float g = std::sqrt(std::clamp(v[1], 0.0f, 1.0f));
         float b = std::sqrt(std::clamp(v[2], 0.0f, 1.0f));
-        out << std::round(255.0 * r) << ' '
-            << std::round(255.0 * g) << ' '
-            << std::round(255.0 * b) << '\n';
+        int rr = (int)std::round(255.0f * r);
+        int gg = (int)std::round(255.0f * g);
+        int bb = (int)std::round(255.0f * b);
+        assert(0 <= rr && rr <= 255);
+        assert(0 <= gg && gg <= 255);
+        assert(0 <= bb && bb <= 255);
+        out << rr << ' ' << gg << ' ' << bb << '\n';
     }
 
     template<int min, int max>
