@@ -18,12 +18,12 @@ public:
         float viewpoint_width = viewpoint_height * aspect_ratio;
 
         vec3_t w = (lookfrom - lookat).unit_vector();
-        u = -(vup - dot(vup, w) * w).unit_vector();
-        v = cross(w, u);
+        v = -(vup - dot(vup, w) * w).unit_vector();
+        u = cross(v, w);
 
         origin = lookfrom;
-        vertical = viewpoint_height * u;
-        horizontal = viewpoint_width * v;
+        horizontal = viewpoint_width * u;
+        vertical = viewpoint_height * v;
         upper_left_corner = origin - vertical / 2 - horizontal / 2 - w;
     }
 
