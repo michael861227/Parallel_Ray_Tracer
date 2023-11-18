@@ -14,7 +14,7 @@ public:
         float aspect_ratio
     ) {
         float vfov_rad = degree_to_radian(vfov_deg);
-        float viewpoint_height = 2.0f * std::tan(vfov_rad / 2);
+        float viewpoint_height = 2.0f * std::tan(vfov_rad / 2.0f);
         float viewpoint_width = viewpoint_height * aspect_ratio;
 
         vec3_t w = (lookfrom - lookat).unit_vector();
