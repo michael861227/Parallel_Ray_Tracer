@@ -38,8 +38,8 @@ private:
     vec3_t u;
     vec3_t v;
     vec3_t origin;
-    vec3_t vertical;
     vec3_t horizontal;
+    vec3_t vertical;
     vec3_t lower_left_corner;
 };
 
