@@ -1,12 +1,12 @@
-#ifndef PARALLEL_RAY_TRACER_CAMERA_H
-#define PARALLEL_RAY_TRACER_CAMERA_H
+#ifndef PARALLEL_RAY_TRACER_CAMERA_T_H
+#define PARALLEL_RAY_TRACER_CAMERA_T_H
 
 #include <cmath>
 #include "ray_t.h"
 
-class camera {
+class camera_t {
 public:
-    camera(
+    camera_t(
         vec3_t lookfrom,
         vec3_t lookat,
         vec3_t vup,
@@ -43,4 +43,4 @@ private:
     vec3_t upper_left_corner;
 };
 
-#endif //PARALLEL_RAY_TRACER_CAMERA_H
+#endif //PARALLEL_RAY_TRACER_CAMERA_T_H
