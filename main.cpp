@@ -55,7 +55,7 @@ int main() {
                 if (trig.hit(ray, record))
                     hit = true;
             if (hit) {
-                vec3_t color = (record.n + vec3_t(1.0f, 1.0f, 1.0f)) / 2;
+                vec3_t color = (record.unit_n + vec3_t(1.0f, 1.0f, 1.0f)) / 2;
                 color.write_color(image_fs);
             } else {
                 vec3_t(0.5, 0.5, 0.5).write_color(image_fs);
