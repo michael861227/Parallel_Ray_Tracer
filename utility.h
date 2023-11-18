@@ -10,8 +10,8 @@ float random_float() {
     return distribution(generator);
 }
 
-float degree_to_radian(float degrees) {
-    return degrees * PI / 180.0f;
+float degree_to_radian(float degree) {
+    return degree * PI / 180.0f;
 }
 
 #endif //PARALLEL_RAY_TRACER_UTILITY_H
