@@ -10,7 +10,7 @@ float random_float() {
     return distribution(generator);
 }
 
-float degrees_to_radians(float degrees) {
+float degree_to_radian(float degrees) {
     return degrees * PI / 180.0f;
 }
 
