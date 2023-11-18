@@ -6,7 +6,7 @@
 class trig_t {
 public:
     trig_t(const vec3_t &p0, const vec3_t &p1, const vec3_t &p2)
-        : p0(p0), e1(p0 - p1), e2(p2 - p0), n(cross(e1, e2)) { }
+        : p0(p0), e1(p0 - p1), e2(p2 - p0), n(cross(e1, e2)) {}
 
     bool hit(ray_t &ray, record_t &rec) {
         vec3_t c = p0 - ray.origin;
