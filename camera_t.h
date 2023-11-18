@@ -18,7 +18,7 @@ public:
         float viewpoint_width = viewpoint_height * aspect_ratio;
 
         vec3_t w = (lookfrom - lookat).unit_vector();
-        v = -(vup - dot(vup, w) * w).unit_vector();
+        v = (vup - dot(vup, w) * w).unit_vector();
         u = cross(v, w);
 
         origin = lookfrom;
