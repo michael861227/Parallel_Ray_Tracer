@@ -24,7 +24,7 @@ public:
         origin = lookfrom;
         horizontal = viewpoint_width * u;
         vertical = viewpoint_height * v;
-        lower_left_corner = origin - vertical / 2 - horizontal / 2 - w;
+        lower_left_corner = origin - horizontal / 2 - vertical / 2 - w;
     }
 
     ray_t get_ray(float s, float t) {
