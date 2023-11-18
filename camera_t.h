@@ -30,7 +30,9 @@ public:
     ray_t get_ray(float s, float t) {
         return {
             origin,
-            lower_left_corner + s * horizontal + t * vertical - origin
+            lower_left_corner + s * horizontal + t * vertical - origin,
+            0.0f,
+            std::numeric_limits<float>::max()
         };
     }
 

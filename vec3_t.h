@@ -9,7 +9,7 @@
 
 class vec3_t {
 public:
-    vec3_t() : v{0.0, 0.0, 0.0} {}
+    vec3_t() = default;
 
     vec3_t(float x, float y, float z) : v{x, y, z} {}
 
