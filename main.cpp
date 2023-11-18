@@ -9,7 +9,8 @@ int main() {
     vec3_t lookat(0.5f, 0.5f, 0.0f);
     vec3_t vup(0.0f, 1.0f, 0.0f);
     float vfov = 55.0f;
-    camera_t camera(lookfrom, lookat, vup, vfov, 1.0f);
+    float aspect_ratio = 1.0f;
+    camera_t camera(lookfrom, lookat, vup, vfov, aspect_ratio);
 
     // scene
     scene_t scene;
