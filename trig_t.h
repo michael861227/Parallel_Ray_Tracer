@@ -20,7 +20,7 @@ public:
             float t = inv_det * dot(c, n);
             if (ray.t_min <= t && t <= ray.t_max) {
                 ray.t_max = t;
-                rec.p = ray.at(t);
+                rec.hit_point = ray.at(t);
                 rec.front_face = dot(ray.direction, n) < 0;
                 rec.unit_n = rec.front_face ? n.unit_vector() : -n.unit_vector();
                 return true;

@@ -5,8 +5,8 @@
 #include "trig_t.h"
 
 struct point_light_t {
-    vec3_t p;
-    vec3_t color;
+    vec3_t position;
+    vec3_t intensity;
 };
 
 struct scene_t {

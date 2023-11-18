@@ -28,8 +28,8 @@ public:
         }
 
         ray.t_max = root;
-        record.p = ray.at(root);
-        vec3_t outward_normal = (record.p - center) / radius;
+        record.hit_point = ray.at(root);
+        vec3_t outward_normal = (record.hit_point - center) / radius;
         record.front_face = dot(ray.direction, outward_normal) < 0;
         record.unit_n = record.front_face ? outward_normal : -outward_normal;
 
