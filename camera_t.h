@@ -24,13 +24,13 @@ public:
         origin = lookfrom;
         horizontal = viewpoint_width * u;
         vertical = viewpoint_height * v;
-        upper_left_corner = origin - vertical / 2 - horizontal / 2 - w;
+        lower_left_corner = origin - vertical / 2 - horizontal / 2 - w;
     }
 
     ray_t get_ray(float s, float t) {
         return {
             origin,
-            upper_left_corner + s * vertical + t * horizontal - origin
+            lower_left_corner + s * horizontal + t * vertical - origin
         };
     }
 
@@ -40,7 +40,7 @@ private:
     vec3_t origin;
     vec3_t vertical;
     vec3_t horizontal;
-    vec3_t upper_left_corner;
+    vec3_t lower_left_corner;
 };
 
 #endif //PARALLEL_RAY_TRACER_CAMERA_T_H
