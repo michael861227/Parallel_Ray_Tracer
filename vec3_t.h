@@ -54,16 +54,21 @@ public:
         return {random_float<min, max>(), random_float<min, max>(), random_float<min, max>()};
     }
 
-    static vec3_t random_in_unit_sphere() {
-        while (true) {
-            vec3_t p = vec3_t::random<-1, 1>();
-            if (p.length_squared() <= 1)
-                return p;
-        }
+    static vec3_t uniform_sample_sphere() {
+        float z = 1 - 2 * random_float<0, 1>();
+        float r = sqrtf(1 - z * z);
+        float phi = 2 * PI * random_float<0, 1>();
+        float x = std::cos(phi);
+        float y = std::sin(phi);
+        return {r * x, r * y, z};
     }
 
     static vec3_t make_zeros() {
         return {0.0f, 0.0f, 0.0f};
+    }
+
+    static vec3_t make_ones() {
+        return {1.0f, 1.0f, 1.0f};
     }
 
 private:

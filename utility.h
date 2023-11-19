@@ -3,6 +3,8 @@
 
 const float PI = 3.14159265f;
 const float EPS = 0.01f;
+const int PATH_MAX = 3;
+const int SAMPLES_PER_PIXEL = 10;
 
 template<int min, int max>
 float random_float() {
