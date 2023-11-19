@@ -36,7 +36,7 @@ vec3_t get_color(const scene_t &scene, ray_t &ray) {
                     float t2 = shadow_dir.length_squared();
                     float t = std::sqrt(t2);
                     color = color + multiplier * scene.point_light.intensity / t2 *
-                                    dot(shadow_ray.direction, record.unit_n) / t;
+                                    dot(shadow_dir, record.unit_n) / t;
                 }
             }
 
