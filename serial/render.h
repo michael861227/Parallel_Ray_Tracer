@@ -31,7 +31,7 @@ vec3_t get_color(const scene_t &scene, ray_t &ray) {
 
             multiplier = multiplier * (*record.albedo);
             if (dot(ray.direction, record.unit_n) * dot(dir, record.unit_n) < 0.f) {  // in same hemisphere
-                ray_t shadow_ray(record.hit_point, dir, EPS, 1.0f);
+                ray_t shadow_ray = {record.hit_point, dir, EPS, 1.0f};
                 if (!occluded(scene, shadow_ray)) {
                     float t2 = shadow_ray.direction.length_squared();
                     float t = std::sqrt(t2);
