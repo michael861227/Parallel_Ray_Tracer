@@ -20,7 +20,7 @@ int main() {
 
     // scene
     scene_t scene;
-    scene.spheres.emplace_back(vec3_t(0.5f, 0.2f, -0.5f), 0.2f, brown);
+    scene.spheres.emplace_back(vec3_t(0.5f, 0.2f, -0.3f), 0.2f, brown);
     scene.add_rectangle(vec3_t(0.0f, 0.0f, 0.0f),
                         vec3_t(0.0f, 1.0f, 0.0f),
                         vec3_t(0.0f, 1.0f, -1.0f),
@@ -46,7 +46,7 @@ int main() {
                         vec3_t(1.0f, 0.0f, -1.0f),
                         vec3_t(1.0f, 0.0f, 0.0f),
                         white);
-    scene.point_light = {vec3_t(0.95f, 0.95f, -0.1f), vec3_t(0.7f, 0.7f, 0.7f)};
+    scene.point_light = {vec3_t(0.95f, 0.95f, 0.3f), vec3_t(0.9f, 0.9f, 0.9f)};
 
     // render
     int image_width = 600;
