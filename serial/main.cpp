@@ -48,25 +48,30 @@ int main() {
                         white);
     scene.point_light = {vec3_t(0.9f, 0.9f, -0.1f), vec3_t(1.0f, 1.0f, 1.0f)};
 
-    // output
+    // render
     int image_width = 600;
     int image_height = 600;
-    std::ofstream image_fs("image.ppm");
-    image_fs << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    vec3_t framebuffer[image_height][image_width];
     for (int i = 0; i < image_height; i++) {
         for (int j = 0; j < image_width; j++) {
             float s = float(j) / float(image_width - 1);
             float t = 1.0f - float(i) / float(image_height - 1);
             ray_t camera_ray = camera.get_ray(s, t);
-            vec3_t color = vec3_t::make_zeros();
+            framebuffer[i][j] = vec3_t::make_zeros();
             for (int k = 1; k <= SAMPLES_PER_PIXEL; k++) {
                 ray_t ray = camera_ray;
-                color = color + get_color(scene, ray);
+                framebuffer[i][j] = framebuffer[i][j] + get_color(scene, ray);
             }
-            color = color / SAMPLES_PER_PIXEL;
-            color.write_color(image_fs);
+            framebuffer[i][j] = framebuffer[i][j] / SAMPLES_PER_PIXEL;
         }
     }
+
+    // output framebuffer
+    std::ofstream image_fs("image.ppm");
+    image_fs << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    for (int i = 0; i < image_height; i++)
+        for (int j = 0; j < image_width; j++)
+            framebuffer[i][j].write_color(image_fs);
 
     return 0;
 }
