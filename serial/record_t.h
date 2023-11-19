@@ -3,8 +3,8 @@
 
 struct record_t {
     vec3_t hit_point;
-    vec3_t unit_n;    // unit normal vector of hit point
-    const vec3_t* albedo;
+    vec3_t unit_n;         // unit normal vector of hit point
+    const vec3_t* albedo;  // albedo of the object being hit
 };
 
 #endif //PARALLEL_RAY_TRACER_RECORD_T_H
