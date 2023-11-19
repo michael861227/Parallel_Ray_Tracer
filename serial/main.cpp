@@ -20,7 +20,7 @@ int main() {
 
     // scene
     scene_t scene;
-    scene.spheres.emplace_back(vec3_t(0.5f, 0.2f, -0.3f), 0.2f, brown);
+    scene.spheres.emplace_back(vec3_t(0.5f, 0.2f, -0.25f), 0.2f, brown);
     scene.add_rectangle(vec3_t(0.0f, 0.0f, 0.0f),
                         vec3_t(0.0f, 1.0f, 0.0f),
                         vec3_t(0.0f, 1.0f, -1.0f),
