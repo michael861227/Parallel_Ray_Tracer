@@ -3,11 +3,7 @@
 
 #include "sphere_t.h"
 #include "trig_t.h"
-
-struct point_light_t {
-    vec3_t position;
-    vec3_t intensity;
-};
+#include "point_light_t.h"
 
 struct scene_t {
     std::vector<sphere_t> spheres;
