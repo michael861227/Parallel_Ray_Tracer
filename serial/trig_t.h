@@ -30,6 +30,7 @@ public:
 
         return false;
     }
+
 private:
     vec3_t p0, e1, e2, n;
     vec3_t albedo;
