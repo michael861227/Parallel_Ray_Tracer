@@ -23,7 +23,7 @@ public:
                 rec.hit_point = ray.at(t);
                 bool front_face = dot(ray.direction, n) < 0;
                 rec.unit_n = front_face ? n.unit_vector() : -n.unit_vector();
-                rec.albedo = &albedo;
+                rec.albedo = albedo;
                 return true;
             }
         }

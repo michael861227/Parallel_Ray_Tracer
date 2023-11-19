@@ -33,7 +33,7 @@ public:
         vec3_t outward_normal = (record.hit_point - center) / radius;
         bool front_face = dot(ray.direction, outward_normal) < 0;
         record.unit_n = front_face ? outward_normal : -outward_normal;
-        record.albedo = &albedo;
+        record.albedo = albedo;
 
         return true;
     }
