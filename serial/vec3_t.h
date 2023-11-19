@@ -50,9 +50,9 @@ public:
     }
 
     static vec3_t uniform_sample_sphere() {
-        float z = 1 - 2 * random_float<0, 1>();
+        float z = 1 - 2 * random_float();
         float r = sqrtf(1 - z * z);
-        float phi = 2 * PI * random_float<0, 1>();
+        float phi = 2 * PI * random_float();
         float x = std::cos(phi);
         float y = std::sin(phi);
         return {r * x, r * y, z};

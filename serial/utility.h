@@ -6,9 +6,8 @@ const float EPS = 0.01f;
 const int PATH_MAX = 2;
 const int SAMPLES_PER_PIXEL = 10;
 
-template<int min, int max>
 float random_float() {
-    static std::uniform_real_distribution<float> distribution(min, max);
+    static std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
     static std::mt19937 generator;
     return distribution(generator);
 }
