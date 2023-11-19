@@ -66,7 +66,7 @@ int main() {
         }
     }
 
-    // output framebuffer
+    // write framebuffer to file
     std::ofstream image_fs("image.ppm");
     image_fs << "P3\n" << image_width << ' ' << image_height << "\n255\n";
     for (int i = 0; i < image_height; i++)
