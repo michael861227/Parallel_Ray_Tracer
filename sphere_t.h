@@ -6,7 +6,8 @@
 
 class sphere_t {
 public:
-    sphere_t(const vec3_t &center, float radius) : center(center), radius(radius) {}
+    sphere_t(const vec3_t &center, float radius, const vec3_t &albedo)
+        : center(center), radius(radius), albedo(albedo) {}
 
     bool hit(ray_t &ray, record_t &record) const {
         vec3_t amc = ray.origin - center;
@@ -30,8 +31,9 @@ public:
         ray.t_max = root;
         record.hit_point = ray.at(root);
         vec3_t outward_normal = (record.hit_point - center) / radius;
-        record.front_face = dot(ray.direction, outward_normal) < 0;
-        record.unit_n = record.front_face ? outward_normal : -outward_normal;
+        bool front_face = dot(ray.direction, outward_normal) < 0;
+        record.unit_n = front_face ? outward_normal : -outward_normal;
+        record.albedo = &albedo;
 
         return true;
     }
@@ -39,6 +41,7 @@ public:
 private:
     vec3_t center;
     float radius;
+    vec3_t albedo;
 };
 
 #endif //PARALLEL_RAY_TRACER_SPHERE_T_H

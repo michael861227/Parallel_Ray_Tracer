@@ -5,8 +5,8 @@
 
 class trig_t {
 public:
-    trig_t(const vec3_t &p0, const vec3_t &p1, const vec3_t &p2)
-        : p0(p0), e1(p0 - p1), e2(p2 - p0), n(cross(e1, e2)) {}
+    trig_t(const vec3_t &p0, const vec3_t &p1, const vec3_t &p2, const vec3_t &albedo)
+        : p0(p0), e1(p0 - p1), e2(p2 - p0), n(cross(e1, e2)), albedo(albedo) {}
 
     bool hit(ray_t &ray, record_t &rec) const {
         vec3_t c = p0 - ray.origin;
@@ -21,8 +21,9 @@ public:
             if (ray.t_min <= t && t <= ray.t_max) {
                 ray.t_max = t;
                 rec.hit_point = ray.at(t);
-                rec.front_face = dot(ray.direction, n) < 0;
-                rec.unit_n = rec.front_face ? n.unit_vector() : -n.unit_vector();
+                bool front_face = dot(ray.direction, n) < 0;
+                rec.unit_n = front_face ? n.unit_vector() : -n.unit_vector();
+                rec.albedo = &albedo;
                 return true;
             }
         }
@@ -31,6 +32,7 @@ public:
     }
 private:
     vec3_t p0, e1, e2, n;
+    vec3_t albedo;
 };
 
 #endif //PARALLEL_RAY_TRACER_TRIG_T_H

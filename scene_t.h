@@ -17,9 +17,9 @@ struct scene_t {
     std::vector<trig_t> trigs;
     std::vector<point_light_t> point_lights;
 
-    void add_rectangle(const vec3_t &p0, const vec3_t &p1, const vec3_t &p2, const vec3_t &p3) {
-        trigs.emplace_back(p0, p1, p2);
-        trigs.emplace_back(p2, p3, p0);
+    void add_rectangle(const vec3_t &p0, const vec3_t &p1, const vec3_t &p2, const vec3_t &p3, const vec3_t &albedo) {
+        trigs.emplace_back(p0, p1, p2, albedo);
+        trigs.emplace_back(p2, p3, p0, albedo);
     }
 };
 

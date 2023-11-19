@@ -12,29 +12,40 @@ int main() {
     float aspect_ratio = 1.0f;
     camera_t camera(lookfrom, lookat, vup, vfov, aspect_ratio);
 
+    // color
+    vec3_t red(0.65f, 0.05f, 0.05f);
+    vec3_t green(0.12f, 0.45f, 0.15f);
+    vec3_t white(0.73f, 0.73f, 0.73f);
+    vec3_t brown(0.62f, 0.57f, 0.54f);
+
     // scene
     scene_t scene;
-    scene.spheres.emplace_back(vec3_t(0.5f, 0.5f, -0.5f), 0.2f);
+    scene.spheres.emplace_back(vec3_t(0.5f, 0.5f, -0.5f), 0.2f, brown);
     scene.add_rectangle(vec3_t(0.0f, 0.0f, 0.0f),
                         vec3_t(0.0f, 1.0f, 0.0f),
                         vec3_t(0.0f, 1.0f, -1.0f),
-                        vec3_t(0.0f, 0.0f, -1.0f));
+                        vec3_t(0.0f, 0.0f, -1.0f),
+                        red);
     scene.add_rectangle(vec3_t(0.0f, 0.0f, -1.0f),
                         vec3_t(0.0f, 1.0f, -1.0f),
                         vec3_t(1.0f, 1.0f, -1.0f),
-                        vec3_t(1.0f, 0.0f, -1.0f));
+                        vec3_t(1.0f, 0.0f, -1.0f),
+                        white);
     scene.add_rectangle(vec3_t(1.0f, 0.0f, 0.0f),
                         vec3_t(1.0f, 1.0f, 0.0f),
                         vec3_t(1.0f, 1.0f, -1.0f),
-                        vec3_t(1.0f, 0.0f, -1.0f));
+                        vec3_t(1.0f, 0.0f, -1.0f),
+                        green);
     scene.add_rectangle(vec3_t(0.0f, 1.0f, 0.0f),
                         vec3_t(0.0f, 1.0f, -1.0f),
                         vec3_t(1.0f, 1.0f, -1.0f),
-                        vec3_t(1.0f, 1.0f, 0.0f));
+                        vec3_t(1.0f, 1.0f, 0.0f),
+                        white);
     scene.add_rectangle(vec3_t(0.0f, 0.0f, 0.0f),
                         vec3_t(0.0f, 0.0f, -1.0f),
                         vec3_t(1.0f, 0.0f, -1.0f),
-                        vec3_t(1.0f, 0.0f, 0.0f));
+                        vec3_t(1.0f, 0.0f, 0.0f),
+                        white);
     scene.point_lights.emplace_back(vec3_t(0.9f, 0.9f, -0.1f), vec3_t(1.0f, 1.0f, 1.0f));
 
     // output

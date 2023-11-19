@@ -38,7 +38,8 @@ vec3_t get_color(const scene_t &scene, ray_t &ray) {
                 if (!occluded(scene, shadow_ray)) {
                     float t2 = shadow_ray.direction.length_squared();
                     float t = std::sqrt(t2);
-                    color = color + multiplier * light.intensity / t2 * dot(shadow_ray.direction, record.unit_n) / t;
+                    color = color + multiplier * (*record.albedo) * light.intensity / t2 *
+                            dot(shadow_ray.direction, record.unit_n) / t;
                 }
             }
 
@@ -46,7 +47,7 @@ vec3_t get_color(const scene_t &scene, ray_t &ray) {
                    record.unit_n + vec3_t::uniform_sample_sphere(),
                    EPS,
                    std::numeric_limits<float>::max()};
-            multiplier = multiplier * vec3_t(0.7f, 0.7f, 0.7f);
+            multiplier = multiplier * (*record.albedo);
         } else {
             break;
         }
