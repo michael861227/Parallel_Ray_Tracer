@@ -46,7 +46,7 @@ int main() {
                         vec3_t(1.0f, 0.0f, -1.0f),
                         vec3_t(1.0f, 0.0f, 0.0f),
                         white);
-    scene.point_lights.emplace_back(vec3_t(0.9f, 0.9f, -0.1f), vec3_t(1.0f, 1.0f, 1.0f));
+    scene.point_light = {vec3_t(0.9f, 0.9f, -0.1f), vec3_t(1.0f, 1.0f, 1.0f)};
 
     // output
     int image_width = 600;

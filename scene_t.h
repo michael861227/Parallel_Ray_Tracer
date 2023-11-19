@@ -5,9 +5,6 @@
 #include "trig_t.h"
 
 struct point_light_t {
-    point_light_t(const vec3_t &position, const vec3_t &intensity)
-        : position(position), intensity(intensity) {}
-
     vec3_t position;
     vec3_t intensity;
 };
@@ -15,7 +12,7 @@ struct point_light_t {
 struct scene_t {
     std::vector<sphere_t> spheres;
     std::vector<trig_t> trigs;
-    std::vector<point_light_t> point_lights;
+    point_light_t point_light;
 
     void add_rectangle(const vec3_t &p0, const vec3_t &p1, const vec3_t &p2, const vec3_t &p3, const vec3_t &albedo) {
         trigs.emplace_back(p0, p1, p2, albedo);
