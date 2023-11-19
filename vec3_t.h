@@ -22,15 +22,15 @@ public:
         return v[x];
     }
 
-    float length_squared() {
+    float length_squared() const {
         return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
     }
 
-    float length() {
+    float length() const {
         return std::sqrt(length_squared());
     }
 
-    vec3_t unit_vector() {
+    vec3_t unit_vector() const {
         float len = length();
         return {v[0] / len, v[1] / len, v[2] / len};
     }
@@ -60,6 +60,10 @@ public:
             if (p.length_squared() <= 1)
                 return p;
         }
+    }
+
+    static vec3_t make_zeros() {
+        return {0.0f, 0.0f, 0.0f};
     }
 
 private:

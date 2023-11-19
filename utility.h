@@ -2,6 +2,7 @@
 #define PARALLEL_RAY_TRACER_UTILITY_H
 
 const float PI = 3.14159265f;
+const float EPS = 0.01f;
 
 template<int min, int max>
 float random_float() {

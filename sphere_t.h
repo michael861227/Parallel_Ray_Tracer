@@ -8,7 +8,7 @@ class sphere_t {
 public:
     sphere_t(const vec3_t &center, float radius) : center(center), radius(radius) {}
 
-    bool hit(ray_t &ray, record_t &record) {
+    bool hit(ray_t &ray, record_t &record) const {
         vec3_t amc = ray.origin - center;
         float a = dot(ray.direction, ray.direction);
         float b = 2.0f * dot(amc, ray.direction);
