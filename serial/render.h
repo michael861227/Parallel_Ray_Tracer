@@ -33,7 +33,7 @@ vec3_t get_color(const scene_t &scene, ray_t &ray) {
             if (dot(ray.direction, record.unit_n) * dot(shadow_dir, record.unit_n) < 0.f) {  // in same hemisphere
                 ray_t shadow_ray = {record.hit_point, shadow_dir, EPS, 1.0f};
                 if (!occluded(scene, shadow_ray)) {
-                    float t2 = shadow_ray.direction.length_squared();
+                    float t2 = shadow_dir.length_squared();
                     float t = std::sqrt(t2);
                     color = color + multiplier * scene.point_light.intensity / t2 *
                                     dot(shadow_ray.direction, record.unit_n) / t;
