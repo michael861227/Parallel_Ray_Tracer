@@ -49,11 +49,6 @@ public:
         out << rr << ' ' << gg << ' ' << bb << '\n';
     }
 
-    template<int min, int max>
-    static vec3_t random() {
-        return {random_float<min, max>(), random_float<min, max>(), random_float<min, max>()};
-    }
-
     static vec3_t uniform_sample_sphere() {
         float z = 1 - 2 * random_float<0, 1>();
         float r = sqrtf(1 - z * z);
