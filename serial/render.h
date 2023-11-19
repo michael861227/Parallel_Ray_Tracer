@@ -27,11 +27,11 @@ vec3_t get_color(const scene_t &scene, ray_t &ray) {
                 hit = true;
 
         if (hit) {
-            vec3_t dir = scene.point_light.position - record.hit_point;
+            vec3_t shadow_dir = scene.point_light.position - record.hit_point;
 
             multiplier = multiplier * (*record.albedo);
-            if (dot(ray.direction, record.unit_n) * dot(dir, record.unit_n) < 0.f) {  // in same hemisphere
-                ray_t shadow_ray = {record.hit_point, dir, EPS, 1.0f};
+            if (dot(ray.direction, record.unit_n) * dot(shadow_dir, record.unit_n) < 0.f) {  // in same hemisphere
+                ray_t shadow_ray = {record.hit_point, shadow_dir, EPS, 1.0f};
                 if (!occluded(scene, shadow_ray)) {
                     float t2 = shadow_ray.direction.length_squared();
                     float t = std::sqrt(t2);
