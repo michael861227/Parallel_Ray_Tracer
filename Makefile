@@ -1,7 +1,10 @@
-all: serial_exe
+all: serial_exe cuda_exe
 
 serial_exe:
-	g++ -o serial_exe -O3 -std=c++17 serial/main.cpp
+	g++ -O3 -std=c++17 serial/main.cpp -o serial_exe
+
+cuda_exe:
+	nvcc -O3 -std=c++17 cuda/main.cu -o cuda_exe
 
 clean:
-	rm -f serial_exe image.ppm
+	rm -f serial_exe cuda_exe image.ppm
