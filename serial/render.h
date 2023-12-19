@@ -16,7 +16,7 @@ vec3_t get_color(const scene_t &scene, ray_t &ray) {
     vec3_t color = vec3_t::make_zeros();
     vec3_t multiplier = vec3_t::make_ones();
 
-    for (int i = 1; i <= PATH_MAX; i++) {
+    for (int i = 1; i <= MAX_PATH; i++) {
         bool hit = false;
         record_t record{};
         for (const auto &sphere : scene.spheres)
