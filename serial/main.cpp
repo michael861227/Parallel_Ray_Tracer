@@ -58,10 +58,8 @@ int main() {
             float t = 1.0f - float(i) / float(image_height - 1);
             ray_t camera_ray = camera.get_ray(s, t);
             framebuffer[i][j] = vec3_t::make_zeros();
-            for (int k = 1; k <= SAMPLES_PER_PIXEL; k++) {
-                ray_t ray = camera_ray;
-                framebuffer[i][j] = framebuffer[i][j] + get_color(scene, ray);
-            }
+            for (int k = 1; k <= SAMPLES_PER_PIXEL; k++)
+                framebuffer[i][j] = framebuffer[i][j] + get_color(scene, camera_ray);
             framebuffer[i][j] = framebuffer[i][j] / SAMPLES_PER_PIXEL;
         }
     }

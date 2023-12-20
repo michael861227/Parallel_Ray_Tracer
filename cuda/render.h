@@ -12,7 +12,7 @@ __device__ bool occluded(const scene_t &scene, ray_t &ray) {
     return false;
 }
 
-__device__ vec3_t get_color(const scene_t &scene, ray_t &ray, curandState &rand_state) {
+__device__ vec3_t get_color(const scene_t &scene, ray_t ray, curandState &rand_state) {
     vec3_t color = vec3_t::make_zeros();
     vec3_t multiplier = vec3_t::make_ones();
 

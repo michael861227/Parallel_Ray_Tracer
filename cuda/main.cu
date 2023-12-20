@@ -17,10 +17,8 @@ __global__ void render_kernel(camera_t* d_camera, scene_t* d_scene, vec3_t* d_fr
     float t = 1.0f - float(y) / float(image_height - 1);
     ray_t camera_ray = d_camera->get_ray(s, t);
     vec3_t color = vec3_t::make_zeros();
-    for (int k = 1; k <= SAMPLES_PER_PIXEL; k++) {
-        ray_t ray = camera_ray;
-        color = color + get_color(*d_scene, ray, rand_state);
-    }
+    for (int k = 1; k <= SAMPLES_PER_PIXEL; k++)
+        color = color + get_color(*d_scene, camera_ray, rand_state);
     d_framebuffer[y * image_width + x] = color / SAMPLES_PER_PIXEL;
 }
 
