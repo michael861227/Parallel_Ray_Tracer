@@ -19,7 +19,7 @@ __global__ void render_kernel(camera_t* d_camera, scene_t* d_scene, vec3_t* d_fr
     unsigned int z = blockIdx.z * blockDim.z + threadIdx.z;
     unsigned int thread_id = z * gridDim.x * blockDim.x * gridDim.y * blockDim.y +
                              y * gridDim.x * blockDim.x + x;
-    if (x >= image_width || y >= image_height)
+    if (x >= image_width || y >= image_height || z >= SAMPLES_PER_PIXEL)
         return;
 
     curandState rand_state;
