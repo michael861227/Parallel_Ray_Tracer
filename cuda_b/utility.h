@@ -9,6 +9,7 @@ const int MAX_PATH = 2;
 const int SAMPLES_PER_PIXEL = 10;
 const int BLOCK_SIZE_X = 8;
 const int BLOCK_SIZE_Y = 8;
+const int BLOCK_SIZE_Z = 8;
 
 #define CHECK_CUDA(val) check_cuda( (val), #val, __FILE__, __LINE__ )
 void check_cuda(cudaError_t result, const char* func, const char* file, int line) {

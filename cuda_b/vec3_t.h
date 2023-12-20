@@ -58,6 +58,12 @@ public:
         return {r * x, r * y, z};
     }
 
+    __device__ void atomic_add(const vec3_t &to_be_added) {
+        atomicAdd(&v[0], to_be_added[0]);
+        atomicAdd(&v[1], to_be_added[1]);
+        atomicAdd(&v[2], to_be_added[2]);
+    }
+
     __host__ __device__ static vec3_t make_zeros() {
         return {0.0f, 0.0f, 0.0f};
     }

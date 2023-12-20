@@ -3,11 +3,22 @@
 #include "scene_t.h"
 #include "render.h"
 
+__global__ void init_kernel(vec3_t* d_framebuffer, unsigned int image_width, unsigned int image_height) {
+    unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x >= image_width || y >= image_height)
+        return;
+
+    d_framebuffer[y * image_width + x] = vec3_t::make_zeros();
+}
+
 __global__ void render_kernel(camera_t* d_camera, scene_t* d_scene, vec3_t* d_framebuffer,
                               unsigned int image_width, unsigned int image_height) {
     unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned int thread_id = y * gridDim.x * blockDim.x + x;
+    unsigned int z = blockIdx.z * blockDim.z + threadIdx.z;
+    unsigned int thread_id = z * gridDim.x * blockDim.x * gridDim.y * blockDim.y +
+                             y * gridDim.x * blockDim.x + x;
     if (x >= image_width || y >= image_height)
         return;
 
@@ -16,10 +27,8 @@ __global__ void render_kernel(camera_t* d_camera, scene_t* d_scene, vec3_t* d_fr
     float s = float(x) / float(image_width - 1);
     float t = 1.0f - float(y) / float(image_height - 1);
     ray_t camera_ray = d_camera->get_ray(s, t);
-    vec3_t color = vec3_t::make_zeros();
-    for (int k = 1; k <= SAMPLES_PER_PIXEL; k++)
-        color = color + get_color(*d_scene, camera_ray, rand_state);
-    d_framebuffer[y * image_width + x] = color / SAMPLES_PER_PIXEL;
+    vec3_t color = get_color(*d_scene, camera_ray, rand_state);
+    d_framebuffer[y * image_width + x].atomic_add(color);
 }
 
 int main() {
@@ -92,18 +101,31 @@ int main() {
 
     vec3_t* d_framebuffer;
     CHECK_CUDA(cudaMalloc(&d_framebuffer, image_height * image_width * sizeof(vec3_t)));
-    dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
-    dim3 grid_size((image_width + block_size.x - 1) / block_size.x, (image_height + block_size.y - 1) / block_size.y);
-    render_kernel<<<grid_size, block_size>>>(d_camera, d_scene, d_framebuffer, image_width, image_height);
+    {
+        dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
+        dim3 grid_size((image_width + block_size.x - 1) / block_size.x,
+                       (image_height + block_size.y - 1) / block_size.y);
+        init_kernel<<<grid_size, block_size>>>(d_framebuffer, image_width, image_height);
+    }
+    {
+        dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z);
+        dim3 grid_size((image_width + block_size.x - 1) / block_size.x,
+                       (image_height + block_size.y - 1) / block_size.y,
+                       (SAMPLES_PER_PIXEL + block_size.z - 1) / block_size.z);
+        render_kernel<<<grid_size, block_size>>>(d_camera, d_scene, d_framebuffer, image_width, image_height);
+    }
 
     // write framebuffer to file
     vec3_t framebuffer[image_height * image_width];
     CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer, image_height * image_width * sizeof(vec3_t), cudaMemcpyDeviceToHost));
     std::ofstream image_fs("image.ppm");
     image_fs << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-    for (int i = 0; i < image_height; i++)
-        for (int j = 0; j < image_width; j++)
-            framebuffer[i * image_width + j].write_color(image_fs);
+    for (int i = 0; i < image_height; i++) {
+        for (int j = 0; j < image_width; j++) {
+            vec3_t color = framebuffer[i * image_width + j] / SAMPLES_PER_PIXEL;
+            color.write_color(image_fs);
+        }
+    }
 
     return 0;
 }
