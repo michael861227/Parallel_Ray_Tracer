@@ -4,7 +4,7 @@
 const float PI = 3.14159265f;
 const float EPS = 0.01f;
 const int MAX_PATH = 2;
-const int SAMPLES_PER_PIXEL = 16;
+const int SAMPLES_PER_PIXEL = 64;
 
 float random_float() {
     static std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
