@@ -6,7 +6,7 @@
 const float PI = 3.14159265f;
 const float EPS = 0.01f;
 const int MAX_PATH = 2;
-const int SAMPLES_PER_PIXEL = 10;
+const int SAMPLES_PER_PIXEL = 16;
 const int BLOCK_SIZE_X = 8;
 const int BLOCK_SIZE_Y = 8;
 
