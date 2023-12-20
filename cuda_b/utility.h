@@ -6,10 +6,10 @@
 const float PI = 3.14159265f;
 const float EPS = 0.01f;
 const int MAX_PATH = 2;
-const int SAMPLES_PER_PIXEL = 16;
-const int BLOCK_SIZE_X = 8;
-const int BLOCK_SIZE_Y = 8;
-const int BLOCK_SIZE_Z = 8;
+const int SAMPLES_PER_PIXEL = 256;
+const int BLOCK_SIZE_X = 1;
+const int BLOCK_SIZE_Y = 1;
+const int BLOCK_SIZE_Z = 128;
 
 #define CHECK_CUDA(val) check_cuda( (val), #val, __FILE__, __LINE__ )
 void check_cuda(cudaError_t result, const char* func, const char* file, int line) {

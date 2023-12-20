@@ -106,6 +106,7 @@ int main() {
         dim3 grid_size((image_width + block_size.x - 1) / block_size.x,
                        (image_height + block_size.y - 1) / block_size.y);
         init_kernel<<<grid_size, block_size>>>(d_framebuffer, image_width, image_height);
+        CHECK_CUDA(cudaGetLastError());
     }
     {
         dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z);
@@ -113,6 +114,7 @@ int main() {
                        (image_height + block_size.y - 1) / block_size.y,
                        (SAMPLES_PER_PIXEL + block_size.z - 1) / block_size.z);
         render_kernel<<<grid_size, block_size>>>(d_camera, d_scene, d_framebuffer, image_width, image_height);
+        CHECK_CUDA(cudaGetLastError());
     }
 
     // write framebuffer to file
