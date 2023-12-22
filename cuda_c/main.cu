@@ -1,4 +1,5 @@
 #include <fstream>
+#include <cub/cub.cuh>
 #include "camera_t.h"
 #include "scene_t.h"
 #include "render.h"
@@ -87,24 +88,18 @@ int main() {
     CHECK_CUDA(cudaMemcpy(d_scene, &scene, sizeof(scene_t), cudaMemcpyHostToDevice));
 
     // render
-    unsigned int image_width = 600;
-    unsigned int image_height = 600;
-
     vec3_t* d_framebuffer;
-    CHECK_CUDA(cudaMalloc(&d_framebuffer, image_height * image_width * sizeof(vec3_t)));
-    dim3 block_size(BLOCK_SIZE_X, BLOCK_SIZE_Y);
-    dim3 grid_size((image_width + block_size.x - 1) / block_size.x, (image_height + block_size.y - 1) / block_size.y);
-    render_kernel<<<grid_size, block_size>>>(d_camera, d_scene, d_framebuffer, image_width, image_height);
-    CHECK_CUDA(cudaGetLastError());
+    CHECK_CUDA(cudaMalloc(&d_framebuffer, NUM_PIXELS * sizeof(vec3_t)));
+    render(d_camera, d_scene, d_framebuffer);
 
     // write framebuffer to file
-    vec3_t framebuffer[image_height * image_width];
-    CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer, image_height * image_width * sizeof(vec3_t), cudaMemcpyDeviceToHost));
+    vec3_t framebuffer[IMAGE_HEIGHT * IMAGE_WIDTH];
+    CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer, IMAGE_HEIGHT * IMAGE_WIDTH * sizeof(vec3_t), cudaMemcpyDeviceToHost));
     std::ofstream image_fs("image.ppm");
-    image_fs << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-    for (int i = 0; i < image_height; i++)
-        for (int j = 0; j < image_width; j++)
-            framebuffer[i * image_width + j].write_color(image_fs);
+    image_fs << "P3\n" << IMAGE_WIDTH << ' ' << IMAGE_HEIGHT << "\n255\n";
+    for (int i = 0; i < IMAGE_HEIGHT; i++)
+        for (int j = 0; j < IMAGE_WIDTH; j++)
+            framebuffer[i * IMAGE_WIDTH + j].write_color(image_fs);
 
     return 0;
 }
