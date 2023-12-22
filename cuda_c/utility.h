@@ -7,8 +7,12 @@ const float PI = 3.14159265f;
 const float EPS = 0.01f;
 const int MAX_PATH = 2;
 const int SAMPLES_PER_PIXEL = 64;
-const int BLOCK_SIZE_X = 8;
-const int BLOCK_SIZE_Y = 8;
+const int BLOCK_SIZE = 64;
+const int NUM_WORKING_PATHS = 512;
+const int IMAGE_WIDTH = 600;
+const int IMAGE_HEIGHT = 600;
+const int NUM_PIXELS = IMAGE_WIDTH * IMAGE_HEIGHT;
+const int RAND_SEED = 0;
 
 #define CHECK_CUDA(val) check_cuda( (val), #val, __FILE__, __LINE__ )
 void check_cuda(cudaError_t result, const char* func, const char* file, int line) {

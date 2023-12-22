@@ -28,7 +28,7 @@ public:
         lower_left_corner = origin - horizontal / 2 - vertical / 2 - w;
     }
 
-    __device__ ray_t get_ray(float s, float t) {
+    __device__ ray_t get_ray(float s, float t) const {
         return {
             origin,
             lower_left_corner + s * horizontal + t * vertical - origin,

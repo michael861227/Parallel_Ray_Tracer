@@ -66,6 +66,12 @@ public:
         return {1.0f, 1.0f, 1.0f};
     }
 
+    __device__ void atomic_add(const vec3_t &vec3_to_be_added) {
+        atomicAdd(&v[0], vec3_to_be_added[0]);
+        atomicAdd(&v[1], vec3_to_be_added[1]);
+        atomicAdd(&v[2], vec3_to_be_added[2]);
+    }
+
 private:
     float v[3];
 };
