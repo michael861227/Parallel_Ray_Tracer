@@ -92,8 +92,8 @@ int main() {
     render(d_camera, d_scene, d_framebuffer);
 
     // write framebuffer to file
-    vec3_t framebuffer[IMAGE_HEIGHT * IMAGE_WIDTH];
-    CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer, IMAGE_HEIGHT * IMAGE_WIDTH * sizeof(vec3_t), cudaMemcpyDeviceToHost));
+    vec3_t framebuffer[NUM_PIXELS];
+    CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer, NUM_PIXELS * sizeof(vec3_t), cudaMemcpyDeviceToHost));
     std::ofstream image_fs("image.ppm");
     image_fs << "P3\n" << IMAGE_WIDTH << ' ' << IMAGE_HEIGHT << "\n255\n";
     for (int i = 0; i < IMAGE_HEIGHT; i++)
