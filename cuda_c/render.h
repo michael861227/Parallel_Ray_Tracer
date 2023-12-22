@@ -1,6 +1,8 @@
 #ifndef PARALLEL_RAY_TRACER_RENDER_H
 #define PARALLEL_RAY_TRACER_RENDER_H
 
+#include <cub/cub.cuh>
+
 // use structure-of-array for memory coalescing
 struct ray_pool_t {
     int pixel_idx[2 * NUM_WORKING_PATHS];

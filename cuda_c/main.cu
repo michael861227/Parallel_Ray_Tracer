@@ -1,5 +1,4 @@
 #include <fstream>
-#include <cub/cub.cuh>
 #include "camera_t.h"
 #include "scene_t.h"
 #include "render.h"
