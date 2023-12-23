@@ -3,25 +3,6 @@
 #include "scene_t.h"
 #include "render.h"
 
-__global__ void render_kernel(camera_t* d_camera, scene_t* d_scene, vec3_t* d_framebuffer,
-                              unsigned int image_width, unsigned int image_height) {
-    unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned int thread_id = y * gridDim.x * blockDim.x + x;
-    if (x >= image_width || y >= image_height)
-        return;
-
-    curandState rand_state;
-    curand_init(0, thread_id, 0, &rand_state);
-    float s = float(x) / float(image_width - 1);
-    float t = 1.0f - float(y) / float(image_height - 1);
-    ray_t camera_ray = d_camera->get_ray(s, t);
-    vec3_t color = vec3_t::make_zeros();
-    for (int k = 1; k <= SAMPLES_PER_PIXEL; k++)
-        color = color + get_color(*d_scene, camera_ray, rand_state);
-    d_framebuffer[y * image_width + x] = color / SAMPLES_PER_PIXEL;
-}
-
 int main() {
     // camera
     vec3_t lookfrom(0.5f, 0.5f, 1.0f);
