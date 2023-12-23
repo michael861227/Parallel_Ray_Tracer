@@ -214,7 +214,8 @@ void compact(int num_items, bool* d_flags, int* d_in, int* d_out, int* d_num_sel
                                           d_num_selected_out, num_items));
 
     if (new_temp_storage_bytes > temp_storage_bytes) {
-        CHECK_CUDA(cudaFree(d_temp_storage));
+        if (d_temp_storage != nullptr)
+            CHECK_CUDA(cudaFree(d_temp_storage));
         CHECK_CUDA(cudaMalloc(&d_temp_storage, new_temp_storage_bytes));
         temp_storage_bytes = new_temp_storage_bytes;
     }
