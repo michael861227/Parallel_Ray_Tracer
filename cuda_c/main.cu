@@ -11,9 +11,9 @@ int main() {
     float vfov = 55.0f;
     float aspect_ratio = 1.0f;
     camera_t camera(lookfrom, lookat, vup, vfov, aspect_ratio);
-    camera_t* d_camera;
-    CHECK_CUDA(cudaMalloc(&d_camera, sizeof(camera_t)));
-    CHECK_CUDA(cudaMemcpy(d_camera, &camera, sizeof(camera_t), cudaMemcpyHostToDevice));
+    camera_t* d_camera_ptr;
+    CHECK_CUDA(cudaMalloc(&d_camera_ptr, sizeof(camera_t)));
+    CHECK_CUDA(cudaMemcpy(d_camera_ptr, &camera, sizeof(camera_t), cudaMemcpyHostToDevice));
 
     // color
     vec3_t red(0.65f, 0.05f, 0.05f);
@@ -63,18 +63,18 @@ int main() {
     CHECK_CUDA(cudaMalloc(&scene.trigs, scene.num_trigs * sizeof(trig_t)));
     CHECK_CUDA(cudaMemcpy(scene.trigs, trigs.data(), scene.num_trigs * sizeof(trig_t), cudaMemcpyHostToDevice));
     scene.point_light = {vec3_t(0.95f, 0.95f, 0.3f), vec3_t(0.9f, 0.9f, 0.9f)};
-    scene_t* d_scene;
-    CHECK_CUDA(cudaMalloc(&d_scene, sizeof(scene_t)));
-    CHECK_CUDA(cudaMemcpy(d_scene, &scene, sizeof(scene_t), cudaMemcpyHostToDevice));
+    scene_t* d_scene_ptr;
+    CHECK_CUDA(cudaMalloc(&d_scene_ptr, sizeof(scene_t)));
+    CHECK_CUDA(cudaMemcpy(d_scene_ptr, &scene, sizeof(scene_t), cudaMemcpyHostToDevice));
 
     // render
-    vec3_t* d_framebuffer;
-    CHECK_CUDA(cudaMalloc(&d_framebuffer, NUM_PIXELS * sizeof(vec3_t)));
-    render(d_camera, d_scene, d_framebuffer);
+    vec3_t* d_framebuffer_ptr;
+    CHECK_CUDA(cudaMalloc(&d_framebuffer_ptr, NUM_PIXELS * sizeof(vec3_t)));
+    render(d_camera_ptr, d_scene_ptr, d_framebuffer_ptr);
 
     // write framebuffer to file
     vec3_t framebuffer[NUM_PIXELS];
-    CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer, NUM_PIXELS * sizeof(vec3_t), cudaMemcpyDeviceToHost));
+    CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer_ptr, NUM_PIXELS * sizeof(vec3_t), cudaMemcpyDeviceToHost));
     std::ofstream image_fs("image.ppm");
     image_fs << "P3\n" << IMAGE_WIDTH << ' ' << IMAGE_HEIGHT << "\n255\n";
     for (int i = 0; i < IMAGE_HEIGHT; i++) {

@@ -20,6 +20,34 @@ struct shadow_ray_payload_t {
     vec3_t color[NUM_WORKING_PATHS];
 };
 
+__constant__ scene_t* d_scene;
+__constant__ camera_t* d_camera;
+__constant__ vec3_t* d_framebuffer;
+__constant__ curandState* d_rand_states;
+__constant__ ray_pool_t* d_ray_pool;
+__constant__ path_ray_payload_t* d_path_ray_payload;
+__constant__ shadow_ray_payload_t* d_shadow_ray_payload;
+
+__constant__ bool* d_color_pending_valid;
+__constant__ bool* d_gen_pending_valid;
+__constant__ bool* d_shit_pending_valid;
+__constant__ bool* d_phit_pending_valid;
+
+__constant__ int* d_color_pending;
+__constant__ int* d_gen_pending;
+__constant__ int* d_shit_pending;
+__constant__ int* d_phit_pending;
+
+__constant__ int* d_color_pending_compact;
+__constant__ int* d_gen_pending_compact;
+__constant__ int* d_shit_pending_compact;
+__constant__ int* d_phit_pending_compact;
+
+__constant__ int* d_num_color_pending;
+__constant__ int* d_num_gen_pending;
+__constant__ int* d_num_shit_pending;
+__constant__ int* d_num_phit_pending;
+
 __device__ bool occluded(const scene_t &scene, ray_t &ray) {
     record_t record{};
     for (int i = 0; i < scene.num_spheres; i++)
@@ -31,34 +59,28 @@ __device__ bool occluded(const scene_t &scene, ray_t &ray) {
     return false;
 }
 
-__global__ void init_framebuffer(vec3_t* d_framebuffer) {
+__global__ void init_framebuffer() {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
     if (thread_id >= NUM_PIXELS)
         return;
     d_framebuffer[thread_id] = vec3_t::make_zeros();
 }
 
-__global__ void init_rand_states(curandState* d_rand_states) {
+__global__ void init_rand_states() {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
     if (thread_id >= NUM_WORKING_PATHS)
         return;
     curand_init(RAND_SEED, thread_id, 0, &d_rand_states[thread_id]);
 }
 
-__global__ void init_path_ray_payload(path_ray_payload_t* d_path_ray_payload) {
+__global__ void init_path_ray_payload() {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
     if (thread_id >= NUM_WORKING_PATHS)
         return;
     d_path_ray_payload->bounces[thread_id] = INT_MAX;
 }
 
-__global__ void logic(bool* d_color_pending_valid,
-                      bool* d_gen_pending_valid,
-                      bool* d_shit_pending_valid,
-                      bool* d_phit_pending_valid,
-                      int* d_color_pending,
-                      int* d_gen_pending,
-                      path_ray_payload_t* d_path_ray_payload) {
+__global__ void logic() {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
     if (thread_id >= NUM_WORKING_PATHS)
         return;
@@ -82,19 +104,9 @@ __global__ void logic(bool* d_color_pending_valid,
     }
 }
 
-__global__ void color(int num_color_pending,
-                      const int* d_color_pending_compact,
-                      const scene_t* d_scene,
-                      bool* d_shit_pending_valid,
-                      bool* d_phit_pending_valid,
-                      int* d_shit_pending,
-                      int* d_phit_pending,
-                      curandState* d_rand_states,
-                      ray_pool_t* d_ray_pool,
-                      path_ray_payload_t* d_path_ray_payload,
-                      shadow_ray_payload_t* d_shadow_ray_payload) {
+__global__ void color() {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
-    if (thread_id >= num_color_pending)
+    if (thread_id >= *d_num_color_pending)
         return;
 
     int path_ray_id = d_color_pending_compact[thread_id];
@@ -131,16 +143,9 @@ __global__ void color(int num_color_pending,
     }
 }
 
-__global__ void gen(int num_gen_pending,
-                    const int* d_gen_pending_compact,
-                    int camera_ray_start_id,
-                    const camera_t* d_camera,
-                    bool* d_phit_pending_valid,
-                    int* d_phit_pending,
-                    ray_pool_t* d_ray_pool,
-                    path_ray_payload_t* d_path_ray_payload) {
+__global__ void gen(int camera_ray_start_id) {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
-    if (thread_id >= num_gen_pending)
+    if (thread_id >= *d_num_gen_pending)
         return;
     int camera_ray_id = camera_ray_start_id + thread_id;
     if (camera_ray_id >= NUM_PIXELS * SAMPLES_PER_PIXEL)
@@ -162,14 +167,9 @@ __global__ void gen(int num_gen_pending,
     d_phit_pending[thread_id] = path_ray_id;
 }
 
-__global__ void shit(int num_shit_pending,
-                     const int* d_shit_pending_compact,
-                     const scene_t* d_scene,
-                     const ray_pool_t* d_ray_pool,
-                     const shadow_ray_payload_t* d_shadow_ray_payload,
-                     vec3_t* d_framebuffer) {
+__global__ void shit() {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
-    if (thread_id >= num_shit_pending)
+    if (thread_id >= *d_num_shit_pending)
         return;
 
     int shadow_ray_id = d_shit_pending_compact[thread_id];
@@ -179,13 +179,9 @@ __global__ void shit(int num_shit_pending,
         d_framebuffer[d_ray_pool->pixel_idx[shadow_ray_id]].atomic_add(d_shadow_ray_payload->color[path_ray_id]);
 }
 
-__global__ void phit(int num_phit_pending,
-                     const int* d_phit_pending_compact,
-                     const scene_t* d_scene,
-                     const ray_pool_t* d_ray_pool,
-                     path_ray_payload_t* d_path_ray_payload) {
+__global__ void phit() {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
-    if (thread_id >= num_phit_pending)
+    if (thread_id >= *d_num_phit_pending)
         return;
 
     int path_ray_id = d_phit_pending_compact[thread_id];
@@ -224,59 +220,49 @@ void compact(int num_items, bool* d_flags, int* d_in, int* d_out, int* d_num_sel
                                           d_num_selected_out, num_items));
 }
 
+template <typename T>
+T* cuda_malloc_symbol(T* &symbol, const size_t size) {
+    T* tmp;
+    CHECK_CUDA(cudaMalloc(&tmp, size));
+    CHECK_CUDA(cudaMemcpyToSymbol(symbol, &tmp, sizeof(T*)));
+    return tmp;
+}
 
-void render(const camera_t* d_camera, const scene_t* d_scene, vec3_t* d_framebuffer) {
-    curandState* d_rand_states;
-    CHECK_CUDA(cudaMalloc(&d_rand_states, NUM_WORKING_PATHS * sizeof(curandState)));
+void render(const camera_t* d_camera_ptr, const scene_t* d_scene_ptr, vec3_t* d_framebuffer_ptr) {
+    CHECK_CUDA(cudaMemcpyToSymbol(d_camera, &d_camera_ptr, sizeof(camera_t*)));
+    CHECK_CUDA(cudaMemcpyToSymbol(d_scene, &d_scene_ptr, sizeof(scene_t*)));
+    CHECK_CUDA(cudaMemcpyToSymbol(d_framebuffer, &d_framebuffer_ptr, sizeof(vec3_t*)));
+    cuda_malloc_symbol(d_rand_states, NUM_WORKING_PATHS * sizeof(curandState));
 
-    bool* d_color_pending_valid;
-    bool* d_gen_pending_valid;
-    bool* d_shit_pending_valid;
-    bool* d_phit_pending_valid;
-    CHECK_CUDA(cudaMalloc(&d_color_pending_valid, NUM_WORKING_PATHS * sizeof(bool)));
-    CHECK_CUDA(cudaMalloc(&d_gen_pending_valid, NUM_WORKING_PATHS * sizeof(bool)));
-    CHECK_CUDA(cudaMalloc(&d_shit_pending_valid, NUM_WORKING_PATHS * sizeof(bool)));
-    CHECK_CUDA(cudaMalloc(&d_phit_pending_valid, 2 * NUM_WORKING_PATHS * sizeof(bool)));
+    bool* d_color_pending_valid_ptr = cuda_malloc_symbol(d_color_pending_valid, NUM_WORKING_PATHS * sizeof(bool));
+    bool* d_gen_pending_valid_ptr = cuda_malloc_symbol(d_gen_pending_valid, NUM_WORKING_PATHS * sizeof(bool));
+    bool* d_shit_pending_valid_ptr = cuda_malloc_symbol(d_shit_pending_valid, NUM_WORKING_PATHS * sizeof(bool));
+    bool* d_phit_pending_valid_ptr = cuda_malloc_symbol(d_phit_pending_valid, 2 * NUM_WORKING_PATHS * sizeof(bool));
 
-    int* d_color_pending;
-    int* d_gen_pending;
-    int* d_shit_pending;
-    int* d_phit_pending;
-    CHECK_CUDA(cudaMalloc(&d_color_pending, NUM_WORKING_PATHS * sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_gen_pending, NUM_WORKING_PATHS * sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_shit_pending, NUM_WORKING_PATHS * sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_phit_pending, 2 * NUM_WORKING_PATHS * sizeof(int)));
+    int* d_color_pending_ptr = cuda_malloc_symbol(d_color_pending, NUM_WORKING_PATHS * sizeof(int));
+    int* d_gen_pending_ptr = cuda_malloc_symbol(d_gen_pending, NUM_WORKING_PATHS * sizeof(int));
+    int* d_shit_pending_ptr = cuda_malloc_symbol(d_shit_pending, NUM_WORKING_PATHS * sizeof(int));
+    int* d_phit_pending_ptr = cuda_malloc_symbol(d_phit_pending, 2 * NUM_WORKING_PATHS * sizeof(int));
 
-    int* d_color_pending_compact;
-    int* d_gen_pending_compact;
-    int* d_shit_pending_compact;
-    int* d_phit_pending_compact;
-    CHECK_CUDA(cudaMalloc(&d_color_pending_compact, NUM_WORKING_PATHS * sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_gen_pending_compact, NUM_WORKING_PATHS * sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_shit_pending_compact, NUM_WORKING_PATHS * sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_phit_pending_compact, 2 * NUM_WORKING_PATHS * sizeof(int)));
+    int* d_color_pending_compact_ptr = cuda_malloc_symbol(d_color_pending_compact, NUM_WORKING_PATHS * sizeof(int));
+    int* d_gen_pending_compact_ptr = cuda_malloc_symbol(d_gen_pending_compact, NUM_WORKING_PATHS * sizeof(int));
+    int* d_shit_pending_compact_ptr = cuda_malloc_symbol(d_shit_pending_compact, NUM_WORKING_PATHS * sizeof(int));
+    int* d_phit_pending_compact_ptr = cuda_malloc_symbol(d_phit_pending_compact, 2 * NUM_WORKING_PATHS * sizeof(int));
 
-    int* d_num_color_pending;
-    int* d_num_gen_pending;
-    int* d_num_shit_pending;
-    int* d_num_phit_pending;
-    CHECK_CUDA(cudaMalloc(&d_num_color_pending, sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_num_gen_pending, sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_num_shit_pending, sizeof(int)));
-    CHECK_CUDA(cudaMalloc(&d_num_phit_pending, sizeof(int)));
+    int* d_num_color_pending_ptr = cuda_malloc_symbol(d_num_color_pending, sizeof(int));
+    int* d_num_gen_pending_ptr = cuda_malloc_symbol(d_num_gen_pending, sizeof(int));
+    int* d_num_shit_pending_ptr = cuda_malloc_symbol(d_num_shit_pending, sizeof(int));
+    int* d_num_phit_pending_ptr = cuda_malloc_symbol(d_num_phit_pending, sizeof(int));
 
-    ray_pool_t* d_ray_pool;
-    path_ray_payload_t* d_path_ray_payload;
-    shadow_ray_payload_t* d_shadow_ray_payload;
-    CHECK_CUDA(cudaMalloc(&d_ray_pool, sizeof(ray_pool_t)));
-    CHECK_CUDA(cudaMalloc(&d_path_ray_payload, sizeof(path_ray_payload_t)));
-    CHECK_CUDA(cudaMalloc(&d_shadow_ray_payload, sizeof(shadow_ray_payload_t)));
+    cuda_malloc_symbol(d_ray_pool, sizeof(ray_pool_t));
+    cuda_malloc_symbol(d_path_ray_payload, sizeof(path_ray_payload_t));
+    cuda_malloc_symbol(d_shadow_ray_payload, sizeof(shadow_ray_payload_t));
 
-    init_framebuffer<<<(NUM_PIXELS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(d_framebuffer);
+    init_framebuffer<<<(NUM_PIXELS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
     CHECK_CUDA(cudaGetLastError());
-    init_rand_states<<<(NUM_WORKING_PATHS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(d_rand_states);
+    init_rand_states<<<(NUM_WORKING_PATHS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
     CHECK_CUDA(cudaGetLastError());
-    init_path_ray_payload<<<(NUM_WORKING_PATHS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(d_path_ray_payload);
+    init_path_ray_payload<<<(NUM_WORKING_PATHS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
     CHECK_CUDA(cudaGetLastError());
 
     int num_color_pending;
@@ -285,73 +271,43 @@ void render(const camera_t* d_camera, const scene_t* d_scene, vec3_t* d_framebuf
     int num_phit_pending;
     int camera_ray_start_id = 0;
     while (true) {
-        logic<<<(NUM_WORKING_PATHS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(d_color_pending_valid,
-                                                                                 d_gen_pending_valid,
-                                                                                 d_shit_pending_valid,
-                                                                                 d_phit_pending_valid,
-                                                                                 d_color_pending,
-                                                                                 d_gen_pending,
-                                                                                 d_path_ray_payload);
+        logic<<<(NUM_WORKING_PATHS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
         CHECK_CUDA(cudaGetLastError());
 
-        compact(NUM_WORKING_PATHS, d_color_pending_valid, d_color_pending,
-                d_color_pending_compact, d_num_color_pending);
-        compact(NUM_WORKING_PATHS, d_gen_pending_valid, d_gen_pending,
-                d_gen_pending_compact, d_num_gen_pending);
-        CHECK_CUDA(cudaMemcpy(&num_color_pending, d_num_color_pending, sizeof(int), cudaMemcpyDeviceToHost));
-        CHECK_CUDA(cudaMemcpy(&num_gen_pending, d_num_gen_pending, sizeof(int), cudaMemcpyDeviceToHost));
+        compact(NUM_WORKING_PATHS, d_color_pending_valid_ptr, d_color_pending_ptr,
+                d_color_pending_compact_ptr, d_num_color_pending_ptr);
+        compact(NUM_WORKING_PATHS, d_gen_pending_valid_ptr, d_gen_pending_ptr,
+                d_gen_pending_compact_ptr, d_num_gen_pending_ptr);
+        CHECK_CUDA(cudaMemcpy(&num_color_pending, d_num_color_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost));
+        CHECK_CUDA(cudaMemcpy(&num_gen_pending, d_num_gen_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost));
         if (num_color_pending == 0 && camera_ray_start_id >= NUM_PIXELS * SAMPLES_PER_PIXEL)
             break;
 
         if (num_color_pending > 0) {
-            color<<<(num_color_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(num_color_pending,
-                                                                                     d_color_pending_compact,
-                                                                                     d_scene,
-                                                                                     d_shit_pending_valid,
-                                                                                     d_phit_pending_valid,
-                                                                                     d_shit_pending,
-                                                                                     d_phit_pending,
-                                                                                     d_rand_states,
-                                                                                     d_ray_pool,
-                                                                                     d_path_ray_payload,
-                                                                                     d_shadow_ray_payload);
+            color<<<(num_color_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
             CHECK_CUDA(cudaGetLastError());
         }
 
         if (num_gen_pending > 0) {
-            gen<<<(num_gen_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(num_gen_pending,
-                                                                                 d_gen_pending_compact,
-                                                                                 camera_ray_start_id,
-                                                                                 d_camera,
-                                                                                 d_phit_pending_valid,
-                                                                                 d_phit_pending,
-                                                                                 d_ray_pool,
-                                                                                 d_path_ray_payload);
+            gen<<<(num_gen_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(camera_ray_start_id);
             CHECK_CUDA(cudaGetLastError());
         }
         camera_ray_start_id += num_gen_pending;
 
-        compact(NUM_WORKING_PATHS, d_shit_pending_valid, d_shit_pending, d_shit_pending_compact, d_num_shit_pending);
-        compact(2 * NUM_WORKING_PATHS, d_phit_pending_valid, d_phit_pending, d_phit_pending_compact, d_num_phit_pending);
-        cudaMemcpy(&num_shit_pending, d_num_shit_pending, sizeof(int), cudaMemcpyDeviceToHost);
-        cudaMemcpy(&num_phit_pending, d_num_phit_pending, sizeof(int), cudaMemcpyDeviceToHost);
+        compact(NUM_WORKING_PATHS, d_shit_pending_valid_ptr, d_shit_pending_ptr,
+                d_shit_pending_compact_ptr, d_num_shit_pending_ptr);
+        compact(2 * NUM_WORKING_PATHS, d_phit_pending_valid_ptr, d_phit_pending_ptr,
+                d_phit_pending_compact_ptr, d_num_phit_pending_ptr);
+        cudaMemcpy(&num_shit_pending, d_num_shit_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost);
+        cudaMemcpy(&num_phit_pending, d_num_phit_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost);
 
         if (num_shit_pending > 0) {
-            shit<<<(num_shit_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(num_shit_pending,
-                                                                                   d_shit_pending_compact,
-                                                                                   d_scene,
-                                                                                   d_ray_pool,
-                                                                                   d_shadow_ray_payload,
-                                                                                   d_framebuffer);
+            shit<<<(num_shit_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
             CHECK_CUDA(cudaGetLastError());
         }
 
         if (num_phit_pending > 0) {
-            phit<<<(num_phit_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(num_phit_pending,
-                                                                                   d_phit_pending_compact,
-                                                                                   d_scene,
-                                                                                   d_ray_pool,
-                                                                                   d_path_ray_payload);
+            phit<<<(num_phit_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
             CHECK_CUDA(cudaGetLastError());
         }
     }
