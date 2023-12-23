@@ -2,7 +2,7 @@
 #define PARALLEL_RAY_TRACER_UTILITY_H
 
 #include <curand_kernel.h>
-#include "../common/constants.hpp"
+#include "../common/constants.h"
 
 const int BLOCK_SIZE_X = 1;
 const int BLOCK_SIZE_Y = 1;

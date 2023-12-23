@@ -1,0 +1,9 @@
+#ifndef PARALLEL_RAY_TRACER_CONSTANTS_H
+#define PARALLEL_RAY_TRACER_CONSTANTS_H
+
+const float PI = 3.14159265f;
+const float EPS = 0.01f;
+const int MAX_PATH = 2;
+const int SAMPLES_PER_PIXEL = 64;
+
+#endif //PARALLEL_RAY_TRACER_CONSTANTS_H

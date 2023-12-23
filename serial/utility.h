@@ -1,7 +1,7 @@
 #ifndef PARALLEL_RAY_TRACER_UTILITY_H
 #define PARALLEL_RAY_TRACER_UTILITY_H
 
-#include "../common/constants.hpp"
+#include "../common/constants.h"
 
 float random_float() {
     static std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
