@@ -108,12 +108,15 @@ __global__ void color(int num_color_pending,
     multiplier = multiplier * record.albedo;
 
     // generate next ray
-    d_ray_pool->ray[path_ray_id] = {record.hit_point,
-                                    record.unit_n + vec3_t::uniform_sample_sphere(d_rand_states[path_ray_id]),
-                                    EPS,
-                                    FLT_MAX};
-    d_phit_pending_valid[NUM_WORKING_PATHS + thread_id] = true;
-    d_phit_pending[NUM_WORKING_PATHS + thread_id] = path_ray_id;
+    int &bounces = d_path_ray_payload->bounces[path_ray_id];
+    if (bounces < MAX_PATH) {
+        d_ray_pool->ray[path_ray_id] = {record.hit_point,
+                                        record.unit_n + vec3_t::uniform_sample_sphere(d_rand_states[path_ray_id]),
+                                        EPS,
+                                        FLT_MAX};
+        d_phit_pending_valid[NUM_WORKING_PATHS + thread_id] = true;
+        d_phit_pending[NUM_WORKING_PATHS + thread_id] = path_ray_id;
+    }
 
     // generate shadow ray
     if (dot(ray.direction, unit_n) * dot(shadow_dir, unit_n) < 0.f) {  // in same hemisphere
