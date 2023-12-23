@@ -98,14 +98,10 @@ __global__ void color(int num_color_pending,
         return;
 
     int path_ray_id = d_color_pending_compact[thread_id];
-    ray_t ray = d_ray_pool->ray[path_ray_id];
     int pixel_idx = d_ray_pool->pixel_idx[path_ray_id];
+    ray_t ray = d_ray_pool->ray[path_ray_id];
 
-    record_t record = d_path_ray_payload->record[path_ray_id];
-    vec3_t shadow_dir = d_scene->point_light.position - record.hit_point;
-    vec3_t &unit_n = record.unit_n;
-    vec3_t &multiplier = d_path_ray_payload->multiplier[path_ray_id];
-    multiplier = multiplier * record.albedo;
+    record_t &record = d_path_ray_payload->record[path_ray_id];
 
     // generate next ray
     int &bounces = d_path_ray_payload->bounces[path_ray_id];
@@ -119,11 +115,13 @@ __global__ void color(int num_color_pending,
     }
 
     // generate shadow ray
-    if (dot(ray.direction, unit_n) * dot(shadow_dir, unit_n) < 0.f) {  // in same hemisphere
+    vec3_t shadow_dir = d_scene->point_light.position - record.hit_point;
+    vec3_t &multiplier = d_path_ray_payload->multiplier[path_ray_id];
+    multiplier = multiplier * record.albedo;
+    if (dot(ray.direction, record.unit_n) * dot(shadow_dir, record.unit_n) < 0.f) {  // in same hemisphere
         int shadow_ray_id = NUM_WORKING_PATHS + path_ray_id;
-        ray_t shadow_ray = {record.hit_point, shadow_dir, EPS, 1.0f};
         d_ray_pool->pixel_idx[shadow_ray_id] = pixel_idx;
-        d_ray_pool->ray[shadow_ray_id] = shadow_ray;
+        d_ray_pool->ray[shadow_ray_id] = {record.hit_point, shadow_dir, EPS, 1.0f};
         float t2 = shadow_dir.length_squared();
         float t = std::sqrt(t2);
         d_shadow_ray_payload->color[path_ray_id] = multiplier * d_scene->point_light.intensity / t2 *
@@ -166,9 +164,9 @@ __global__ void gen(int num_gen_pending,
 
 __global__ void shit(int num_shit_pending,
                      const int* d_shit_pending_compact,
-                     const shadow_ray_payload_t* d_shadow_ray_payload,
-                     const ray_pool_t* d_ray_pool,
                      const scene_t* d_scene,
+                     const ray_pool_t* d_ray_pool,
+                     const shadow_ray_payload_t* d_shadow_ray_payload,
                      vec3_t* d_framebuffer) {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
     if (thread_id >= num_shit_pending)
@@ -378,9 +376,9 @@ void render(const camera_t* d_camera, const scene_t* d_scene, vec3_t* d_framebuf
         if (num_shit_pending > 0) {
             shit<<<(num_shit_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(num_shit_pending,
                                                                                    d_shit_pending_compact,
-                                                                                   d_shadow_ray_payload,
-                                                                                   d_ray_pool,
                                                                                    d_scene,
+                                                                                   d_ray_pool,
+                                                                                   d_shadow_ray_payload,
                                                                                    d_framebuffer);
             CHECK_CUDA(cudaGetLastError());
         }
