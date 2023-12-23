@@ -234,6 +234,9 @@ void render(const camera_t* d_camera_ptr, const scene_t* d_scene_ptr, const vec3
     CHECK_CUDA(cudaMemcpyToSymbol(d_scene, &d_scene_ptr, sizeof(scene_t*)));
     CHECK_CUDA(cudaMemcpyToSymbol(d_framebuffer, &d_framebuffer_ptr, sizeof(vec3_t*)));
     cuda_malloc_symbol(d_rand_states, NUM_WORKING_PATHS * sizeof(curandState));
+    cuda_malloc_symbol(d_ray_pool, sizeof(ray_pool_t));
+    cuda_malloc_symbol(d_path_ray_payload, sizeof(path_ray_payload_t));
+    cuda_malloc_symbol(d_shadow_ray_payload, sizeof(shadow_ray_payload_t));
 
     bool* d_color_pending_valid_ptr = cuda_malloc_symbol(d_color_pending_valid, NUM_WORKING_PATHS * sizeof(bool));
     bool* d_gen_pending_valid_ptr = cuda_malloc_symbol(d_gen_pending_valid, NUM_WORKING_PATHS * sizeof(bool));
@@ -254,10 +257,6 @@ void render(const camera_t* d_camera_ptr, const scene_t* d_scene_ptr, const vec3
     int* d_num_gen_pending_ptr = cuda_malloc_symbol(d_num_gen_pending, sizeof(int));
     int* d_num_shit_pending_ptr = cuda_malloc_symbol(d_num_shit_pending, sizeof(int));
     int* d_num_phit_pending_ptr = cuda_malloc_symbol(d_num_phit_pending, sizeof(int));
-
-    cuda_malloc_symbol(d_ray_pool, sizeof(ray_pool_t));
-    cuda_malloc_symbol(d_path_ray_payload, sizeof(path_ray_payload_t));
-    cuda_malloc_symbol(d_shadow_ray_payload, sizeof(shadow_ray_payload_t));
 
     init_framebuffer<<<(NUM_PIXELS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
     CHECK_CUDA(cudaGetLastError());
