@@ -5,7 +5,7 @@
 #include "../common/constants.h"
 
 const int BLOCK_SIZE = 64;
-const int NUM_WORKING_PATHS = 512;
+const int NUM_WORKING_PATHS = 1 << 18;
 const int IMAGE_WIDTH = 600;
 const int IMAGE_HEIGHT = 600;
 const int NUM_PIXELS = IMAGE_WIDTH * IMAGE_HEIGHT;
