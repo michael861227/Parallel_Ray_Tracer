@@ -171,76 +171,38 @@ __global__ void shit(int num_shit_pending,
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
     if (thread_id >= num_shit_pending)
         return;
+
     int shadow_ray_id = d_shit_pending_compact[thread_id];
     int path_ray_id = shadow_ray_id - NUM_WORKING_PATHS;
-    ray_t ray = d_ray_pool->ray[path_ray_id];
+    ray_t ray = d_ray_pool->ray[shadow_ray_id];
     if (!occluded(*d_scene, ray))
         d_framebuffer[d_ray_pool->pixel_idx[shadow_ray_id]].atomic_add(d_shadow_ray_payload->color[path_ray_id]);
 }
 
 __global__ void phit(int num_phit_pending,
                      const int* d_phit_pending_compact,
-                     const ray_pool_t* d_ray_pool,
                      const scene_t* d_scene,
+                     const ray_pool_t* d_ray_pool,
                      path_ray_payload_t* d_path_ray_payload) {
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
     if (thread_id >= num_phit_pending)
         return;
 
-    int ray_id = d_phit_pending_compact[thread_id];
-    ray_t ray = d_ray_pool->ray[ray_id];
+    int path_ray_id = d_phit_pending_compact[thread_id];
+    ray_t ray = d_ray_pool->ray[path_ray_id];
+
     bool hit = false;
     record_t record{};
-    for (int j = 0; j < d_scene->num_spheres; j++)
-        if (d_scene->spheres[j].hit(ray, record))
+    for (int i = 0; i < d_scene->num_spheres; i++)
+        if (d_scene->spheres[i].hit(ray, record))
             hit = true;
-    for (int j = 0; j < d_scene->num_trigs; j++)
-        if (d_scene->trigs[j].hit(ray, record))
+    for (int i = 0; i < d_scene->num_trigs; i++)
+        if (d_scene->trigs[i].hit(ray, record))
             hit = true;
 
     // save intersection result
-    d_path_ray_payload->hit[ray_id] = hit;
-    d_path_ray_payload->record[ray_id] = record;
-}
-
-__device__ vec3_t get_color(const scene_t &scene, ray_t ray, curandState &rand_state) {
-    vec3_t color = vec3_t::make_zeros();
-    vec3_t multiplier = vec3_t::make_ones();
-
-    for (int i = 1; i <= MAX_PATH; i++) {
-        bool hit = false;
-        record_t record{};
-        for (int j = 0; j < scene.num_spheres; j++)
-            if (scene.spheres[j].hit(ray, record))
-                hit = true;
-        for (int j = 0; j < scene.num_trigs; j++)
-            if (scene.trigs[j].hit(ray, record))
-                hit = true;
-
-        if (hit) {
-            vec3_t shadow_dir = scene.point_light.position - record.hit_point;
-
-            multiplier = multiplier * record.albedo;
-            if (dot(ray.direction, record.unit_n) * dot(shadow_dir, record.unit_n) < 0.f) {  // in same hemisphere
-                ray_t shadow_ray = {record.hit_point, shadow_dir, EPS, 1.0f};
-                if (!occluded(scene, shadow_ray)) {
-                    float t2 = shadow_dir.length_squared();
-                    float t = std::sqrt(t2);
-                    color = color + multiplier * scene.point_light.intensity / t2 *
-                                    dot(shadow_dir, record.unit_n) / t;  // cos(theta)
-                }
-            }
-
-            ray = {record.hit_point,
-                   record.unit_n + vec3_t::uniform_sample_sphere(rand_state),
-                   EPS,
-                   FLT_MAX};
-        } else {
-            break;
-        }
-    }
-
-    return color;
+    d_path_ray_payload->hit[path_ray_id] = hit;
+    d_path_ray_payload->record[path_ray_id] = record;
 }
 
 void compact(int num_items, bool* d_flags, int* d_in, int* d_out, int* d_num_selected_out) {
@@ -386,8 +348,8 @@ void render(const camera_t* d_camera, const scene_t* d_scene, vec3_t* d_framebuf
         if (num_phit_pending > 0) {
             phit<<<(num_phit_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(num_phit_pending,
                                                                                    d_phit_pending_compact,
-                                                                                   d_ray_pool,
                                                                                    d_scene,
+                                                                                   d_ray_pool,
                                                                                    d_path_ray_payload);
             CHECK_CUDA(cudaGetLastError());
         }
