@@ -1,4 +1,4 @@
-all: serial_exe cuda_a_exe cuda_b_exe cuda_c_exe mpi_exe dummy
+all: serial_exe cuda_a_exe cuda_b_exe cuda_c_exe mpi_exe
 
 serial_exe: FORCE
 	g++ -O3 -std=c++17 -Wall serial/main.cpp -o serial_exe
@@ -14,9 +14,6 @@ cuda_c_exe: FORCE
 
 mpi_exe: FORCE
 	mpicxx -O3 -std=c++17 -Wall mpi/main.cpp -o mpi_exe
-
-dummy: FORCE
-	g++ mpi/main.cpp -o /dev/null
 
 clean: FORCE
 	rm -f serial_exe cuda_a_exe cuda_b_exe cuda_c_exe mpi_exe image.ppm

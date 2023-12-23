@@ -2,11 +2,8 @@
 #define PARALLEL_RAY_TRACER_UTILITY_H
 
 #include <curand_kernel.h>
+#include "../common/constants.hpp"
 
-const float PI = 3.14159265f;
-const float EPS = 0.01f;
-const int MAX_PATH = 2;
-const int SAMPLES_PER_PIXEL = 64;
 const int BLOCK_SIZE = 64;
 const int NUM_WORKING_PATHS = 512;
 const int IMAGE_WIDTH = 600;
