@@ -77,9 +77,12 @@ int main() {
     CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer, NUM_PIXELS * sizeof(vec3_t), cudaMemcpyDeviceToHost));
     std::ofstream image_fs("image.ppm");
     image_fs << "P3\n" << IMAGE_WIDTH << ' ' << IMAGE_HEIGHT << "\n255\n";
-    for (int i = 0; i < IMAGE_HEIGHT; i++)
-        for (int j = 0; j < IMAGE_WIDTH; j++)
-            framebuffer[i * IMAGE_WIDTH + j].write_color(image_fs);
+    for (int i = 0; i < IMAGE_HEIGHT; i++) {
+        for (int j = 0; j < IMAGE_WIDTH; j++) {
+            vec3_t color = framebuffer[i * IMAGE_WIDTH + j] / SAMPLES_PER_PIXEL;
+            color.write_color(image_fs);
+        }
+    }
 
     return 0;
 }
