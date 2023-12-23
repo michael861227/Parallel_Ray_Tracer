@@ -20,8 +20,8 @@ struct shadow_ray_payload_t {
     vec3_t color[NUM_WORKING_PATHS];
 };
 
-__constant__ scene_t* d_scene;
 __constant__ camera_t* d_camera;
+__constant__ scene_t* d_scene;
 __constant__ vec3_t* d_framebuffer;
 __constant__ curandState* d_rand_states;
 __constant__ ray_pool_t* d_ray_pool;
@@ -113,13 +113,16 @@ __global__ void color() {
     int pixel_idx = d_ray_pool->pixel_idx[path_ray_id];
     ray_t ray = d_ray_pool->ray[path_ray_id];
 
-    record_t &record = d_path_ray_payload->record[path_ray_id];
+    record_t record = d_path_ray_payload->record[path_ray_id];
 
     // generate next ray
     int &bounces = d_path_ray_payload->bounces[path_ray_id];
+    vec3_t &multiplier = d_path_ray_payload->multiplier[path_ray_id];
+    multiplier = multiplier * record.albedo;
+    curandState &rand_state = d_rand_states[path_ray_id];
     if (bounces < MAX_PATH) {
         d_ray_pool->ray[path_ray_id] = {record.hit_point,
-                                        record.unit_n + vec3_t::uniform_sample_sphere(d_rand_states[path_ray_id]),
+                                        record.unit_n + vec3_t::uniform_sample_sphere(rand_state),
                                         EPS,
                                         FLT_MAX};
         d_phit_pending_valid[NUM_WORKING_PATHS + thread_id] = true;
@@ -128,8 +131,6 @@ __global__ void color() {
 
     // generate shadow ray
     vec3_t shadow_dir = d_scene->point_light.position - record.hit_point;
-    vec3_t &multiplier = d_path_ray_payload->multiplier[path_ray_id];
-    multiplier = multiplier * record.albedo;
     if (dot(ray.direction, record.unit_n) * dot(shadow_dir, record.unit_n) < 0.f) {  // in same hemisphere
         int shadow_ray_id = NUM_WORKING_PATHS + path_ray_id;
         d_ray_pool->pixel_idx[shadow_ray_id] = pixel_idx;
@@ -228,7 +229,7 @@ T* cuda_malloc_symbol(T* &symbol, const size_t size) {
     return tmp;
 }
 
-void render(const camera_t* d_camera_ptr, const scene_t* d_scene_ptr, vec3_t* d_framebuffer_ptr) {
+void render(const camera_t* d_camera_ptr, const scene_t* d_scene_ptr, const vec3_t* d_framebuffer_ptr) {
     CHECK_CUDA(cudaMemcpyToSymbol(d_camera, &d_camera_ptr, sizeof(camera_t*)));
     CHECK_CUDA(cudaMemcpyToSymbol(d_scene, &d_scene_ptr, sizeof(scene_t*)));
     CHECK_CUDA(cudaMemcpyToSymbol(d_framebuffer, &d_framebuffer_ptr, sizeof(vec3_t*)));
