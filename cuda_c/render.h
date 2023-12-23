@@ -280,6 +280,7 @@ void render(const camera_t* d_camera_ptr, const scene_t* d_scene_ptr, const vec3
                 d_gen_pending_compact_ptr, d_num_gen_pending_ptr);
         CHECK_CUDA(cudaMemcpy(&num_color_pending, d_num_color_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost));
         CHECK_CUDA(cudaMemcpy(&num_gen_pending, d_num_gen_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost));
+
         if (num_color_pending == 0 && camera_ray_start_id >= NUM_PIXELS * SAMPLES_PER_PIXEL)
             break;
 
@@ -291,15 +292,15 @@ void render(const camera_t* d_camera_ptr, const scene_t* d_scene_ptr, const vec3
         if (num_gen_pending > 0) {
             gen<<<(num_gen_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(camera_ray_start_id);
             CHECK_CUDA(cudaGetLastError());
+            camera_ray_start_id += num_gen_pending;
         }
-        camera_ray_start_id += num_gen_pending;
 
         compact(NUM_WORKING_PATHS, d_shit_pending_valid_ptr, d_shit_pending_ptr,
                 d_shit_pending_compact_ptr, d_num_shit_pending_ptr);
         compact(2 * NUM_WORKING_PATHS, d_phit_pending_valid_ptr, d_phit_pending_ptr,
                 d_phit_pending_compact_ptr, d_num_phit_pending_ptr);
-        cudaMemcpy(&num_shit_pending, d_num_shit_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost);
-        cudaMemcpy(&num_phit_pending, d_num_phit_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost);
+        CHECK_CUDA(cudaMemcpy(&num_shit_pending, d_num_shit_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost));
+        CHECK_CUDA(cudaMemcpy(&num_phit_pending, d_num_phit_pending_ptr, sizeof(int), cudaMemcpyDeviceToHost));
 
         if (num_shit_pending > 0) {
             shit<<<(num_shit_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>();
