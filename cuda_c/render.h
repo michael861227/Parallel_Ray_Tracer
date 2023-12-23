@@ -84,11 +84,11 @@ __global__ void logic(bool* d_color_pending_valid,
 
 __global__ void color(int num_color_pending,
                       const int* d_color_pending_compact,
+                      const scene_t* d_scene,
                       bool* d_shit_pending_valid,
                       bool* d_phit_pending_valid,
                       int* d_shit_pending,
                       int* d_phit_pending,
-                      const scene_t* d_scene,
                       curandState* d_rand_states,
                       ray_pool_t* d_ray_pool,
                       path_ray_payload_t* d_path_ray_payload,
@@ -96,15 +96,16 @@ __global__ void color(int num_color_pending,
     int thread_id = (int)(blockIdx.x * blockDim.x + threadIdx.x);
     if (thread_id >= num_color_pending)
         return;
+
     int path_ray_id = d_color_pending_compact[thread_id];
+    ray_t ray = d_ray_pool->ray[path_ray_id];
     int pixel_idx = d_ray_pool->pixel_idx[path_ray_id];
 
     record_t record = d_path_ray_payload->record[path_ray_id];
     vec3_t shadow_dir = d_scene->point_light.position - record.hit_point;
+    vec3_t &unit_n = record.unit_n;
     vec3_t &multiplier = d_path_ray_payload->multiplier[path_ray_id];
     multiplier = multiplier * record.albedo;
-    ray_t ray = d_ray_pool->ray[path_ray_id];
-    vec3_t unit_n = record.unit_n;
 
     // generate next ray
     d_ray_pool->ray[path_ray_id] = {record.hit_point,
@@ -129,9 +130,9 @@ __global__ void color(int num_color_pending,
     }
 }
 
-__global__ void gen(int camera_ray_start_id,
-                    int num_gen_pending,
+__global__ void gen(int num_gen_pending,
                     const int* d_gen_pending_compact,
+                    int camera_ray_start_id,
                     const camera_t* d_camera,
                     bool* d_phit_pending_valid,
                     int* d_phit_pending,
@@ -307,6 +308,13 @@ void render(const camera_t* d_camera, const scene_t* d_scene, vec3_t* d_framebuf
     CHECK_CUDA(cudaMalloc(&d_path_ray_payload, sizeof(path_ray_payload_t)));
     CHECK_CUDA(cudaMalloc(&d_shadow_ray_payload, sizeof(shadow_ray_payload_t)));
 
+    init_framebuffer<<<(NUM_PIXELS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(d_framebuffer);
+    CHECK_CUDA(cudaGetLastError());
+    init_rand_states<<<(NUM_WORKING_PATHS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(d_rand_states);
+    CHECK_CUDA(cudaGetLastError());
+    init_path_ray_payload<<<(NUM_WORKING_PATHS + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(d_path_ray_payload);
+    CHECK_CUDA(cudaGetLastError());
+
     int num_color_pending;
     int num_gen_pending;
     int num_shit_pending;
@@ -332,20 +340,24 @@ void render(const camera_t* d_camera, const scene_t* d_scene, vec3_t* d_framebuf
             break;
 
         if (num_color_pending > 0) {
-            logic<<<(num_color_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(d_color_pending_valid,
-                                                                                     d_gen_pending_valid,
+            color<<<(num_color_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(num_color_pending,
+                                                                                     d_color_pending_compact,
+                                                                                     d_scene,
                                                                                      d_shit_pending_valid,
                                                                                      d_phit_pending_valid,
-                                                                                     d_color_pending,
-                                                                                     d_gen_pending,
-                                                                                     d_path_ray_payload);
+                                                                                     d_shit_pending,
+                                                                                     d_phit_pending,
+                                                                                     d_rand_states,
+                                                                                     d_ray_pool,
+                                                                                     d_path_ray_payload,
+                                                                                     d_shadow_ray_payload);
             CHECK_CUDA(cudaGetLastError());
         }
 
         if (num_gen_pending > 0) {
-            gen<<<(num_gen_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(camera_ray_start_id,
-                                                                                 num_gen_pending,
+            gen<<<(num_gen_pending + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(num_gen_pending,
                                                                                  d_gen_pending_compact,
+                                                                                 camera_ray_start_id,
                                                                                  d_camera,
                                                                                  d_phit_pending_valid,
                                                                                  d_phit_pending,
