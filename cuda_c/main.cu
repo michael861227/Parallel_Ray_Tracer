@@ -68,18 +68,30 @@ int main() {
     CHECK_CUDA(cudaMemcpy(d_scene_ptr, &scene, sizeof(scene_t), cudaMemcpyHostToDevice));
 
     // render
-    vec3_t* d_framebuffer_ptr;
-    CHECK_CUDA(cudaMalloc(&d_framebuffer_ptr, NUM_PIXELS * sizeof(vec3_t)));
-    render(d_camera_ptr, d_scene_ptr, d_framebuffer_ptr);
+    float* d_framebuffer_x_ptr;
+    float* d_framebuffer_y_ptr;
+    float* d_framebuffer_z_ptr;
+    CHECK_CUDA(cudaMalloc(&d_framebuffer_x_ptr, NUM_PIXELS * sizeof(float)));
+    CHECK_CUDA(cudaMalloc(&d_framebuffer_y_ptr, NUM_PIXELS * sizeof(float)));
+    CHECK_CUDA(cudaMalloc(&d_framebuffer_z_ptr, NUM_PIXELS * sizeof(float)));
+    render(d_camera_ptr, d_scene_ptr, d_framebuffer_x_ptr, d_framebuffer_y_ptr, d_framebuffer_z_ptr);
 
     // write framebuffer to file
-    vec3_t framebuffer[NUM_PIXELS];
-    CHECK_CUDA(cudaMemcpy(framebuffer, d_framebuffer_ptr, NUM_PIXELS * sizeof(vec3_t), cudaMemcpyDeviceToHost));
+    float framebuffer_x[NUM_PIXELS];
+    float framebuffer_y[NUM_PIXELS];
+    float framebuffer_z[NUM_PIXELS];
+    CHECK_CUDA(cudaMemcpy(framebuffer_x, d_framebuffer_x_ptr, NUM_PIXELS * sizeof(float), cudaMemcpyDeviceToHost));
+    CHECK_CUDA(cudaMemcpy(framebuffer_y, d_framebuffer_y_ptr, NUM_PIXELS * sizeof(float), cudaMemcpyDeviceToHost));
+    CHECK_CUDA(cudaMemcpy(framebuffer_z, d_framebuffer_z_ptr, NUM_PIXELS * sizeof(float), cudaMemcpyDeviceToHost));
     std::ofstream image_fs("image.ppm");
     image_fs << "P3\n" << IMAGE_WIDTH << ' ' << IMAGE_HEIGHT << "\n255\n";
     for (int i = 0; i < IMAGE_HEIGHT; i++) {
         for (int j = 0; j < IMAGE_WIDTH; j++) {
-            vec3_t color = framebuffer[i * IMAGE_WIDTH + j] / SAMPLES_PER_PIXEL;
+            vec3_t color = {
+                framebuffer_x[i * IMAGE_WIDTH + j] / SAMPLES_PER_PIXEL,
+                framebuffer_y[i * IMAGE_WIDTH + j] / SAMPLES_PER_PIXEL,
+                framebuffer_z[i * IMAGE_WIDTH + j] / SAMPLES_PER_PIXEL
+            };
             color.write_color(image_fs);
         }
     }
