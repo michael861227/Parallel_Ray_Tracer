@@ -2,9 +2,12 @@
 #include "camera_t.h"
 #include "scene_t.h"
 #include "render.h"
+#include <immintrin.h>
 
+#define __AVX2_AVAILABLE__
 
 int main() {
+
     // camera
     vec3_t lookfrom(0.5f, 0.5f, 1.0f);
     vec3_t lookat(0.5f, 0.5f, 0.0f);
