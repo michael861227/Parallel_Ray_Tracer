@@ -61,6 +61,7 @@ public:
         // int gg = (int)std::round(255.0f * g);
         // int bb = (int)std::round(255.0f * b);
         __m128 rgb_v = _mm_min_ps(_mm_max_ps(v, _mm_setzero_ps()), _mm_set_ps1(1.0f));
+        rgb_v = _mm_sqrt_ps(rgb_v);
         rgb_v = _mm_mul_ps(rgb_v, _mm_set1_ps(255.0f));
         float rgb[4];
         vector2array(rgb_v, rgb);
