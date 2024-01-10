@@ -46,7 +46,7 @@ time ./openmp_exe
 
 ### MPI
 ```shell
-parallel-scp -h host.txt ~
+parallel-scp -h host.txt openmp_exe ~
 time mpirun ./mpi_exe
 ```
 
