@@ -19,7 +19,7 @@ time ./openmp_exe
 
 ### MPI
 ```shell
-time ./mpi_exe
+time mpirun ./mpi_exe
 ```
 
 ### CUDA Mega
