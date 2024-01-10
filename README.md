@@ -46,8 +46,8 @@ time ./openmp_exe
 
 ### MPI
 ```shell
-parallel-scp -h host.txt openmp_exe ~
-time mpirun ./mpi_exe
+parallel-scp -h host.txt mpi_exe ~
+time mpirun -np 8 --hostfile host.txt ./mpi_exe
 ```
 
 ### CUDA Mega
