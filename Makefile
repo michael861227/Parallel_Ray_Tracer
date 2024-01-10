@@ -1,4 +1,4 @@
-all: serial_exe cuda_a_exe cuda_b_exe cuda_c_exe mpi_exe simd_exe
+all: serial_exe cuda_a_exe cuda_b_exe cuda_c_exe mpi_exe simd_exe openmp_exe
 
 serial_exe: FORCE
 	g++ -O3 -std=c++17 -Wall serial/main.cpp -o serial_exe
@@ -18,10 +18,10 @@ mpi_exe: FORCE
 simd_exe: FORCE
 	g++ -O3 -std=c++17 -mavx -mavx2 -Wall simd/main.cpp -o simd_exe
 
-OpenMP_exe: FORCE
+openmp_exe: FORCE
 	g++ -O3 -std=c++17 -fopenmp -Wall OpenMP/main.cpp -o openmp_exe 
 
 clean: FORCE
-	rm -f serial_exe cuda_a_exe cuda_b_exe cuda_c_exe mpi_exe simd_exe image.ppm
+	rm -f serial_exe cuda_a_exe cuda_b_exe cuda_c_exe mpi_exe simd_exe openmp_exe image.ppm
 
 FORCE:
