@@ -3,7 +3,7 @@
 
 const float PI = 3.14159265f;
 const float EPS = 0.01f;
-const int MAX_PATH = 2;
-const int SAMPLES_PER_PIXEL = 64;
+const int MAX_PATH = 4;
+const int SAMPLES_PER_PIXEL = 512;
 
 #endif //PARALLEL_RAY_TRACER_CONSTANTS_H
