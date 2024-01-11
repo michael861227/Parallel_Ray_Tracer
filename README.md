@@ -4,10 +4,14 @@
 
 [Presentation Slides](slides.pdf)
 
+<BR>
+
 ## Build
 ```shell
 make
 ```
+
+<BR>
 
 ## Prerequisite for MPI
 ```shell
@@ -35,8 +39,9 @@ Maintain consistency by copying the data from the `.ssh` directory, ensuring tha
 4. parallel-scp -A -h host.txt -r ~/.ssh ~
 ```
 
+<BR>
 
-## Execute
+## Execute Each Programming Model
 
 ### SIMD
 ```shell
