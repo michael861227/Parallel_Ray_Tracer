@@ -1,5 +1,9 @@
 # Parallel Ray Tracer
 
+[Project Report](report.pdf)
+
+[Presentation Slides](slides.pdf)
+
 ## Build
 ```shell
 make
