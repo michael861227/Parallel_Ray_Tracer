@@ -16,13 +16,13 @@ make
 ## Prerequisite for MPI
 ### 0. Initial Setting
 ```shell
-1. mkdir -p ~/.ssh
-2. ssh-keygen -t rsa # Leave all empty
+mkdir -p ~/.ssh
+ssh-keygen -t rsa # Leave all empty
 ```
 
 ### 1. Copy the config to `~/.ssh/config`
 ```Shell
-3. cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 ```
 
 ### 2. Enter pp2 to pp10
@@ -37,9 +37,9 @@ ssh pp10
 
 ### 3. Maintain consistency by copying the data from the `.ssh` directory, ensuring that the keys on each computer are uniform.
 ```shell
-4. parallel-scp -A -h host.txt -r ~/.ssh ~
+parallel-scp -A -h host.txt -r ~/.ssh ~
 ```
-
+### 4. Ensure `SSH` access to another computer without requiring a password.
 <BR>
 
 ## Execute Each Programming Model
